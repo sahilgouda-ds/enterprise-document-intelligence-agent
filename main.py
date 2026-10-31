@@ -1,6 +1,9 @@
 import asyncio
+from pathlib import Path
+
 from dotenv import load_dotenv
 from fastapi import FastAPI
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 from pypdf import PdfReader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -27,6 +30,11 @@ collection.upsert(
 
 class Question(BaseModel):
     question: str
+
+
+@app.get("/", response_class=HTMLResponse)
+def home():
+    return (Path(__file__).parent / "index.html").read_text(encoding="utf-8")
 
 
 @app.get("/health")
@@ -57,5 +65,5 @@ Question: {body.question}"""
     )
     return {
         "answer": response.text,
-        "sources": [d[:100] + "..." for d in docs],
+        "sources": docs,
     }
